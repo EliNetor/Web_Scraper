@@ -2,42 +2,29 @@ import httpx
 from bs4 import BeautifulSoup
 import asyncio
 import string
+import functions as f
+import classes
 
-async def fetch_html(url):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-        return response.text
-
-async def getText(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    text_element = soup.find_all('p')
-    all_texts = [element.get_text() for element in text_element]
-    return all_texts
-
-async def getA(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    url_element = soup.find_all('a')
-    all_urls = [element.get('href') for element in url_element if element.get('href') and element.get('href').startswith('http')]
-    return all_urls
+async def async_main(crawler):
+    # je zal per pagina die je wil crawlen ook een task moeten maken
+    # lees de documentatie van create_task!
+    task = asyncio.create_task(crawler.crawl(crawler.initial_page, 0))
+    crawler.background_tasks.add(task)
+    task.add_done_callback(crawler.background_tasks.discard)
+    # moet met while lus
+    # wachten op taken genereert nieuwe taken
+    # we willen dat de main pas eindigt als alle gegenereerde taken klaar zijn
+    while crawler.background_tasks:
+        await asyncio.gather(*crawler.background_tasks)
 
 async def main():
-    url = "https://www.ap.be"
-    html_code = await fetch_html(url)
-    all_p = await getText(html_code)
-    full_string = " ".join(all_p)
+    visited_links = set()
+    initial_page_url = "https://www.ap.be/"
+    max_crawl_depth = 2
 
-    translator = str.maketrans("", "", string.punctuation)
-    full_string = full_string.translate(translator)
+    crawler = classes.Crawler(visited_links, initial_page_url, max_crawl_depth)
+    await async_main(crawler)
 
-    words = full_string.split()
-
-    word_amount = {}
-    for word in words:
-        x = full_string.count(word)
-        word_amount.update({word:x})
-    
-    print(word_amount)
-    print( await getA(html_code))
 
 if __name__ == "__main__":
     asyncio.run(main())
