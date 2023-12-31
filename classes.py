@@ -19,11 +19,11 @@ class Crawler:
 
         html_code = await f.fetch_html(starting_link)
         links = await f.getA(html_code)
-
-        # print(f"Starting link = {starting_link}, links in starting link: {links}")
+        words = await f.getText(html_code)
 
         new_data ={ 
-            "Redirects":links
+            "Redirects":links,
+            "Words_in_p_tag": words
         }
 
         try:

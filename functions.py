@@ -1,5 +1,6 @@
 import httpx
 from bs4 import BeautifulSoup
+import string
 
 async def fetch_html(url):
     try:
@@ -21,7 +22,21 @@ async def getText(html):
     soup = BeautifulSoup(html, 'html.parser')
     text_element = soup.find_all('p')
     all_texts = [element.get_text() for element in text_element]
-    return all_texts
+    full_string = " ".join(all_texts)
+
+    full_string = full_string.encode("ascii", "ignore").decode()
+
+    translator = str.maketrans("", "", string.punctuation)
+    full_string = full_string.translate(translator)
+
+    words = full_string.split()
+
+    word_amount = {}
+    for word in words:
+        x = full_string.count(word)
+        word_amount.update({word:x})
+
+    return word_amount
 
 async def getA(html):
     if html is None:
