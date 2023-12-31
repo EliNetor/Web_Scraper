@@ -1,5 +1,6 @@
 import functions as f
 import asyncio
+import json
 
 class Crawler:
     def __init__(self, visited, initial_page, max_depth):
@@ -14,10 +15,27 @@ class Crawler:
         
         self.visited.add(starting_link)
 
+        json_file = 'data.json'
+
         html_code = await f.fetch_html(starting_link)
         links = await f.getA(html_code)
 
-        print(f"Starting link = {starting_link}, links in starting link: {links}")
+        # print(f"Starting link = {starting_link}, links in starting link: {links}")
+
+        new_data ={ 
+            "Redirects":links
+        }
+
+        try:
+            with open(json_file, 'r') as json_f:
+                data = json.load(json_f)
+        except FileNotFoundError:
+            data = {}
+
+        data[starting_link] = new_data
+
+        with open(json_file,'w') as json_f:
+            json.dump(data, json_f, indent=3)
 
         tasks = []
         for link in links:
@@ -27,13 +45,3 @@ class Crawler:
             tasks.append(task)
 
         await asyncio.gather(*tasks)
-
-        
-            # dit vul je zelf aan
-            # je zal hier ook create_task nodig hebben
-            # opnieuw: lees die documentatie
-
-
-            # dit vul je zelf aan
-            # je zal hier ook create_task nodig hebben
-            # opnieuw: lees die documentatie

@@ -5,14 +5,14 @@ async def fetch_html(url):
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(url)
-            response.raise_for_status()  # Raise an exception for 4xx and 5xx status codes
+            response.raise_for_status()  
             return response.text
     except httpx.HTTPStatusError as exc:
         print(f"HTTP status error: {exc}")
-        return None  # Return None in case of an error
+        return None  
     except httpx.RequestError as exc:
         print(f"Request error: {exc}")
-        return None  # Return None in case of an error
+        return None  
 
 async def getText(html):
     if html is None:
